@@ -1,610 +1,355 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="utf-8">
   <title>Mission $100M — Space Mission Design Game</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <style>
-    :root {
-      --bg: #05070f;
-      --panel: #0d1324;
-      --panel-2: #111d35;
-      --line: #2a3d6d;
-      --text: #dfe9ff;
-      --muted: #9caed8;
-      --accent: #54d2ff;
-      --good: #63ff9b;
-      --bad: #ff5d6c;
-      --warn: #ffc857;
-    }
-
-    * { box-sizing: border-box; }
-
-    html, body {
-      margin: 0;
-      height: 100%;
-      background: radial-gradient(circle at top, #0d1833 0%, #05070f 52%, #02040a 100%);
-      color: var(--text);
-      font-family: "Segoe UI", Tahoma, sans-serif;
-    }
-
-    body {
-      display: grid;
-      place-items: center;
-      min-height: 100vh;
-    }
-
-    .shell {
-      width: min(920px, 96vw);
-      background: rgba(10, 16, 28, 0.82);
-      border: 1px solid var(--line);
-      border-radius: 18px;
-      box-shadow: 0 22px 60px rgba(0,0,0,0.42);
-      padding: 18px;
-      position: relative;
-    }
-
-    h1 {
-      margin: 0 0 12px;
-      font-size: clamp(28px, 3vw, 42px);
-      text-align: center;
-      letter-spacing: 2px;
-      color: var(--accent);
-    }
-
-    .topbar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin: 0 10px 12px;
-      font-size: 14px;
-      color: var(--muted);
-      gap: 12px;
-    }
-
-    #game {
-      display: block;
-      width: 100%;
-      height: auto;
-      border-radius: 12px;
-      border: 1px solid var(--line);
-      background: #02060d;
-      image-rendering: auto;
-    }
-
-    .panel {
-      position: absolute;
-      inset: 82px 18px 18px 18px;
-      display: grid;
-      place-items: center;
-      background: rgba(5, 7, 15, 0.82);
-      border: 1px solid var(--line);
-      border-radius: 12px;
-      padding: 24px;
-      text-align: center;
-      backdrop-filter: blur(2px);
-    }
-
-    .panel.hidden {
-      display: none;
-    }
-
-    .panel-inner {
-      max-width: 560px;
-    }
-
-    h2 {
-      margin: 0 0 10px;
-      font-size: clamp(24px, 4vw, 36px);
-      color: var(--accent);
-    }
-
-    p {
-      margin: 0 0 16px;
-      line-height: 1.6;
-      color: var(--text);
-    }
-
-    ul {
-      margin: 8px 0 22px;
-      padding-left: 18px;
-      text-align: left;
-      color: var(--text);
-      line-height: 1.7;
-    }
-
-    button {
-      border: none;
-      border-radius: 10px;
-      padding: 12px 20px;
-      font-size: 16px;
-      font-weight: 700;
-      background: linear-gradient(180deg, #65ddff 0%, #2bbaf7 100%);
-      color: #021018;
-      cursor: pointer;
-      transition: transform 0.12s ease, opacity 0.12s ease;
-    }
-
-    button:hover { transform: translateY(-1px); }
-    button:active { transform: translateY(0); }
-
-    .secondary {
-      background: transparent;
-      border: 1px solid var(--line);
-      color: var(--accent);
-    }
-
-    .score-pill {
-      display: inline-block;
-      background: rgba(84, 210, 255, 0.12);
-      border: 1px solid rgba(84, 210, 255, 0.4);
-      border-radius: 999px;
-      padding: 6px 12px;
-      font-size: 12px;
-      letter-spacing: 0.8px;
-      text-transform: uppercase;
-      color: var(--accent);
-    }
-
-    @media (max-width: 640px) {
-      .shell { padding: 10px; }
-      .panel { inset: 84px 10px 10px 10px; }
-      .topbar { font-size: 12px; }
-    }
+    :root { --bg:#05070f; --panel:#0e1426; --line:#24315c; --text:#dbe6ff; --dim:#7f90bd; --acc:#4fd1ff; --good:#5dff9a; --bad:#ff5d6c; --warn:#ffc857; }
+    * { box-sizing:border-box; }
+    body { margin:0; background:var(--bg); color:var(--text); font-family:"Segoe UI",system-ui,sans-serif; min-height:100vh; display:flex; align-items:center; justify-content:center; }
+    #wrap { position:relative; width:900px; max-width:100vw; height:640px; }
+    canvas { position:absolute; inset:0; width:100%; height:100%; background:#02030a; border:1px solid var(--line); border-radius:8px; }
+    .screen { position:absolute; inset:0; background:rgba(5,7,15,.97); border:1px solid var(--line); border-radius:8px; padding:20px 28px; overflow:auto; display:none; }
+    .screen.on { display:block; }
+    h1 { margin:0 0 4px; font-size:26px; letter-spacing:1px; color:var(--acc); }
+    h2 { margin:0 0 4px; font-size:20px; color:var(--acc); }
+    h4 { margin:12px 0 6px; font-size:12.5px; letter-spacing:1.5px; color:var(--dim); text-transform:uppercase; }
+    p.sub { margin:0 0 12px; color:var(--dim); font-size:14px; }
+    .grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+    .card { background:var(--panel); border:1px solid var(--line); border-radius:8px; padding:10px 12px; cursor:pointer; user-select:none; }
+    .card.sel { border-color:var(--good); box-shadow:0 0 0 1px var(--good) inset; }
+    .card.locked { cursor:default; border-color:var(--warn); }
+    .card b { display:block; margin-bottom:3px; }
+    .card span { font-size:12.5px; color:var(--dim); }
+    button { background:var(--acc); color:#021018; border:0; border-radius:6px; padding:10px 20px; font-weight:700; font-size:15px; cursor:pointer; }
+    button:disabled { background:#33405f; color:#7f8aa8; cursor:not-allowed; }
+    button.sm { padding:2px 10px; font-size:16px; }
+    button.ghost { background:transparent; color:var(--acc); border:1px solid var(--line); }
+    button.pc { margin:0 6px; padding:14px 22px; font-size:17px; }
+    .row { display:flex; gap:20px; }
+    .items { flex:1; }
+    .item { display:grid; grid-template-columns:1fr 92px; gap:8px; align-items:center; background:var(--panel); border:1px solid var(--line); border-radius:8px; padding:7px 10px; margin-bottom:6px; }
+    .item.pick { cursor:pointer; }
+    .item.on { border-color:var(--good); box-shadow:0 0 0 1px var(--good) inset; }
+    .item .nm { font-weight:600; font-size:14px; }
+    .item .st { font-size:12px; color:var(--dim); }
+    .item .qty { display:flex; align-items:center; gap:8px; justify-content:flex-end; }
+    .item .qty em { font-style:normal; min-width:14px; text-align:center; }
+    .tag { display:inline-block; font-size:10px; font-weight:800; letter-spacing:.8px; padding:1px 6px; border-radius:4px; margin-right:6px; color:#02070f; vertical-align:middle; }
+    .side { width:240px; background:var(--panel); border:1px solid var(--line); border-radius:8px; padding:12px; height:fit-content; position:sticky; top:0; }
+    .side h3 { margin:0 0 8px; font-size:15px; color:var(--acc); }
+    .stat { display:flex; justify-content:space-between; font-size:13.5px; padding:2px 0; }
+    .bar { height:8px; background:#1a2447; border-radius:4px; margin:2px 0 8px; overflow:hidden; }
+    .bar i { display:block; height:100%; background:var(--good); width:0; }
+    .over { color:var(--bad)!important; }
+    .foot { margin-top:14px; display:flex; gap:12px; align-items:center; }
+    .center { text-align:center; padding-top:50px; }
+    .big { font-size:46px; font-weight:800; color:var(--acc); margin:6px 0 14px; letter-spacing:2px; }
+    .small { font-size:12.5px; color:var(--dim); }
+    kbd { background:#1a2447; border:1px solid var(--line); border-radius:4px; padding:1px 6px; font-size:12px; }
+    table.ctl { margin:10px auto 0; border-collapse:collapse; font-size:12.5px; }
+    table.ctl td, table.ctl th { padding:3px 10px; border-bottom:1px solid var(--line); text-align:left; }
+    table.hs { margin:8px auto 0; border-collapse:collapse; font-size:13.5px; min-width:420px; }
+    table.hs th { color:var(--dim); font-size:11.5px; letter-spacing:1px; text-align:left; padding:3px 10px; }
+    table.hs td { padding:4px 10px; border-bottom:1px solid var(--line); text-align:left; }
+    table.hs tr.me td { color:var(--good); font-weight:700; }
+    ul.how { text-align:left; margin:0; padding-left:20px; font-size:14px; line-height:1.55; }
+    ul.how li { margin-bottom:4px; }
+    input.nm { background:var(--panel); color:var(--text); border:1px solid var(--line); border-radius:6px; padding:8px 10px; font-size:15px; width:170px; }
+    #mute { position:absolute; right:10px; bottom:8px; z-index:5; padding:3px 8px; font-size:14px; background:rgba(14,20,38,.8); color:var(--text); border:1px solid var(--line); }
   </style>
 </head>
 <body>
-  <div class="shell">
-    <h1>MISSION $100M</h1>
-    <div class="topbar">
-      <span class="score-pill" id="statusText">READY</span>
-      <span id="hudInfo">Lives: 3 &nbsp;·&nbsp; Score: 0 &nbsp;·&nbsp; Wave: 1</span>
-    </div>
-    <canvas id="game" width="900" height="640"></canvas>
+  <div id="wrap">
+    <canvas id="c" width="900" height="640"></canvas>
+    <button id="mute" title="Mute / unmute (M)">🔊</button>
+    <div id="np" style="position:absolute;left:12px;bottom:10px;z-index:5;font:600 12px 'Segoe UI',sans-serif;color:#9aa8d6"></div>
 
-    <div id="startPanel" class="panel">
-      <div class="panel-inner">
-        <h2>Launch the mission</h2>
-        <p>Design your ship, survive the alien waves, and keep your crew alive through five escalating attacks.</p>
-        <ul>
-          <li>Move with A/D or Left/Right</li>
-          <li>Use W/S or Up/Down to strafe</li>
-          <li>Press Space to fire</li>
-          <li>Avoid enemy fire and survive each wave</li>
+    <div class="screen on" id="s-title">
+      <div class="center">
+        <h1 style="font-size:40px">MISSION $100M</h1>
+        <p class="sub">Design the spacecraft. Arm it. Spend wisely. Survive the alien gauntlet.</p>
+        <p class="small" style="max-width:620px;margin:0 auto 20px;line-height:1.6">
+          <b>1. Plan</b> — identify the dangers you'll face.<br>
+          <b>2. Build</b> — each pilot designs a ship and picks weapons by <b>mass</b>, <b>cost</b> and <b>size</b> with a <b>$100M</b> budget.<br>
+          <b>3. Fly</b> — heavier ships sink faster; bigger ships are easier to hit. Survive 5 waves — enemies hit harder every wave.
+        </p>
+        <p class="sub" style="margin-bottom:10px">How many pilots?</p>
+        <button class="pc" data-n="1">1 Player</button><button class="pc" data-n="2">2 Players</button>
+        <div style="margin-top:22px"><button class="ghost" id="b-scores">🏆 Scoreboard</button></div>
+      </div>
+    </div>
+
+    <div class="screen" id="s-names">
+      <div class="center" style="padding-top:60px">
+        <h2 style="font-size:26px">Enter Pilot Names</h2>
+        <p class="sub">Your name goes on the scoreboard with your personal score.</p>
+        <div id="name-fields" style="display:inline-block;text-align:left"></div>
+        <div class="foot" style="justify-content:center"><button class="ghost" id="b-names-back">Back</button><button id="b-names-ok">Continue to Mission Briefing →</button></div>
+      </div>
+    </div>
+
+    <div class="screen" id="s-brief">
+      <h2>Step 1 — Mission Briefing: Identify the Challenges</h2>
+      <p class="sub">Select every danger you expect. Identified hazards show an early warning in flight; surprises hit 50% harder. (A Radar Array reveals warnings for its pilot.)</p>
+      <div class="grid" id="challenges"></div>
+      <div class="foot"><button id="b-to-build">Continue to Spacecraft Design →</button><span class="small" id="brief-note"></span></div>
+    </div>
+
+    <div class="screen" id="s-build">
+      <h2 id="build-title">Step 2 — Payload &amp; Spacecraft Design</h2>
+      <p class="sub">Every kilogram costs launch money and pulls the ship down. Every size unit makes you a bigger target.</p>
+      <div class="row">
+        <div class="items" id="items"></div>
+        <div class="side">
+          <h3>My Ship</h3>
+          <canvas id="prev" width="216" height="130" style="position:static;width:100%;height:auto;border-radius:6px;margin-bottom:10px"></canvas>
+          <h3>Mission Summary</h3>
+          <div class="stat"><span>Spacecraft bus</span><span>$<span id="v-bus"></span>M</span></div>
+          <div class="stat"><span>Weapons + systems</span><span>$<span id="v-inst">0</span>M</span></div>
+          <div class="stat"><span>Launch (<span id="v-rate"></span>/kg)</span><span>$<span id="v-launch">0</span>M</span></div>
+          <div class="stat" style="border-top:1px solid var(--line);margin-top:4px;padding-top:6px"><b>Total</b><b id="v-total-w">$<span id="v-total">0</span>M</b></div>
+          <div class="bar"><i id="bar-cost"></i></div>
+          <div class="stat"><span>Mass</span><span><span id="v-mass">0</span> kg</span></div>
+          <div class="stat"><span>Size</span><span id="v-size-w"><span id="v-size">0</span> / <span id="v-cap"></span></span></div>
+          <div class="bar"><i id="bar-size"></i></div>
+          <div class="stat"><span>Gravity pull</span><span id="v-g">0</span></div>
+          <div class="stat"><span>Thrust</span><span id="v-t">0</span></div>
+          <div class="stat"><span>Net lift</span><span id="v-net">0</span></div>
+          <div class="stat"><span>Hull</span><span id="v-hull">0</span></div>
+          <div class="stat"><span>Remaining</span><span id="v-left">0</span></div>
+          <div style="margin-top:10px"><button id="b-launch" style="width:100%">🚀 Submit &amp; Launch</button></div>
+          <div class="small" id="v-warn" style="margin-top:6px;color:var(--bad)"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="screen" id="s-how">
+      <h2>How to Play — 30 second briefing</h2>
+      <div class="row" style="margin-top:8px">
+        <ul class="how" style="flex:1.2">
+          <li><b>Goal:</b> clear <b>5 waves</b> of aliens. Shoot them; <b>dodge or shoot down</b> their red bullets.</li>
+          <li><b>Gravity:</b> your ship sinks — heavier sinks faster. Hold <b>thrust</b> to stay up. Stay out of the glowing atmosphere at the bottom.</li>
+          <li><b>Guns</b> fire at range; <b>close-combat</b> weapons <b>launch by themselves</b> every 2.5 seconds at the nearest alien — you can't aim them.</li>
+          <li><b>Loot:</b> dead aliens drop coins; pick them up to score points.</li>
+          <li><b>Danger grows:</b> damage you take gets tougher every wave.</li>
+          <li><b>Hazards:</b> asteroids, radiation, and solar flare events can appear.</li>
         </ul>
-        <button id="startButton">Start Mission</button>
+        <div style="flex:1">
+          <h4 style="margin-top:0">Controls</h4>
+          <div id="ctl-table"></div>
+          <p class="small" style="margin-top:10px">Move with <kbd>A D</kbd> or arrow keys. Fire with <kbd>Space</kbd>, thrust with <kbd>W</kbd> or <kbd>↑</kbd>, and dive with <kbd>S</kbd> or <kbd>↓</kbd>.</p>
+        </div>
       </div>
+      <div class="foot" style="justify-content:center;margin-top:18px"><button id="b-go">Got it — Launch! 🚀</button></div>
     </div>
 
-    <div id="gameOverPanel" class="panel hidden">
-      <div class="panel-inner">
-        <h2 id="gameOverTitle">Mission Failed</h2>
-        <p id="finalStats">Final score: 0</p>
-        <button id="restartButton">Play Again</button>
-      </div>
-    </div>
+    <div class="screen" id="s-count"><div class="center" style="padding-top:140px"><p class="sub">Cleared for launch</p><div class="big" id="count">3</div></div></div>
+    <div class="screen" id="s-end"><div class="center" style="padding-top:10px" id="end-body"></div></div>
+    <div class="screen" id="s-scores"><div class="center" style="padding-top:20px"><h1>🏆 Scoreboard</h1><p class="sub">Top missions on this device</p><div id="hs-body"></div><div class="foot" style="justify-content:center"><button id="b-hs-back">Back</button><button class="ghost" id="b-hs-clear"></button></div></div></div>
   </div>
 
   <script>
-    const canvas = document.getElementById('game');
-    const ctx = canvas.getContext('2d');
-    const startPanel = document.getElementById('startPanel');
-    const gameOverPanel = document.getElementById('gameOverPanel');
-    const startButton = document.getElementById('startButton');
-    const restartButton = document.getElementById('restartButton');
-    const statusText = document.getElementById('statusText');
-    const hudInfo = document.getElementById('hudInfo');
-    const gameOverTitle = document.getElementById('gameOverTitle');
-    const finalStats = document.getElementById('finalStats');
+    "use strict";
 
-    const keys = {
-      left: false,
-      right: false,
-      up: false,
-      down: false,
-      fire: false
+    const BUDGET = 100;
+    const LAUNCH_RATE = 0.012;
+    const SIZE_CAP = 30;
+    const BUS = { mass:400, cost:10, size:4 };
+    const PILOTS = [
+      { name:"Pilot 1", color:"#4fd1ff", keys:{l:"KeyA", r:"KeyD", u:"KeyW", d:"KeyS", f:"Space"}, label:["A D W S","Space"] },
+      { name:"Pilot 2", color:"#ff9d5d", keys:{l:"ArrowLeft", r:"ArrowRight", u:"ArrowUp", d:"ArrowDown", f:"Enter"}, label:["Arrow keys","Enter"] }
+    ];
+    const CHALLENGES = [
+      { id:"alien", name:"Hostile Aliens", desc:"Armed patrols guard this region. (Always present.)", locked:true },
+      { id:"asteroid", name:"Asteroid Field", desc:"Large rocks tumbling through the flight path. Counter: debris deflector, firepower." },
+      { id:"micro", name:"Micrometeoroid Swarm", desc:"Fast, tiny particles in dense sheets. Counter: shielding and deflection." },
+      { id:"radiation", name:"Radiation Storm", desc:"Charged particles drain hull integrity over time. Counter: radiation shielding." },
+      { id:"flare", name:"Solar Flare / EMP", desc:"Knocks guns offline for seconds. Counter: solar panels." }
+    ];
+
+    const EQUIP = [
+      { id:"laser", name:"Laser Cannon Mod", mass:150, cost:9, size:3, max:3, fx:" +1 parallel beam" },
+      { id:"shield", name:"Shield Generator", mass:200, cost:14, size:4, max:3, fx:" +2 hit shielding" },
+      { id:"armor", name:"Armor Plating", mass:350, cost:7, size:5, max:3, fx:" +30 hull" },
+      { id:"thrust", name:"Ion Thrusters", mass:120, cost:12, size:3, max:3, fx:" +250 thrust" },
+      { id:"deflect", name:"Debris Deflector", mass:90, cost:6, size:2, max:2, fx:" -40% debris damage" },
+      { id:"radshld", name:"Radiation Shielding", mass:110, cost:7, size:2, max:2, fx:" -45% radiation damage" },
+      { id:"solar", name:"Solar Panels", mass:80, cost:5, size:3, max:2, fx:" faster recharge" },
+      { id:"radar", name:"Radar Array", mass:60, cost:5, size:2, max:1, fx:" reveals hazards early" },
+      { id:"science", name:"Science Instruments", mass:45, cost:11, size:1, max:3, fx:" +40% points" }
+    ];
+
+    const CAT = {
+      std:{label:"STANDARD GUN", col:"#7f90bd"},
+      long:{label:"LONG RANGE GUN", col:"#ff8a8a"},
+      med:{label:"MEDIUM RANGE GUN", col:"#ffc857"},
+      short:{label:"SHORT RANGE GUN", col:"#5dff9a"},
+      melee:{label:"CLOSE COMBAT", col:"#4fd1ff"}
     };
 
-    const state = {
-      screen: 'menu',
-      score: 0,
-      wave: 1,
-      maxWave: 5,
-      spawnCooldown: 0,
-      lastTime: 0,
-      player: null,
-      bullets: [],
-      enemies: [],
-      enemyBullets: [],
-      particles: [],
-      stars: []
-    };
+    const WEAPONS = [
+      { id:"blaster", kind:"gun", cat:"std", name:"Standard Blaster", short:"Blaster", mass:0, cost:0, size:0, cd:.30, dmg:1, spd:640, range:9999, spread:0, pierce:0, fx:"Free built-in." },
+      { id:"m107", kind:"gun", cat:"long", name:"Barrett M107", short:"M107", mass:320, cost:18, size:5, cd:1.0, dmg:5, spd:1100, range:9999, spread:0, pierce:3, fx:"Slow, heavy rifle." },
+      { id:"ak47", kind:"gun", cat:"med", name:"AK-47", short:"AK-47", mass:180, cost:10, size:3, cd:.11, dmg:1, spd:700, range:620, spread:.06, pierce:0, fx:"Rapid fire, slight spread." },
+      { id:"m1911", kind:"gun", cat:"short", name:"M1911", short:"M1911", mass:45, cost:3, size:1, cd:.32, dmg:2, spd:600, range:300, spread:.02, pierce:0, fx:"Cheap and light." },
+      { id:"katana1", kind:"melee", cat:"melee", name:"Katana (Single)", short:"Katana", mass:25, cost:6, size:1, hits:1, shots:1, fx:"Throws 1 katana per launch." },
+      { id:"katana2", kind:"melee", cat:"melee", name:"Katana (Double)", short:"Dbl Katana", mass:50, cost:11, size:2, hits:2, shots:2, fx:"Throws 2 katanas." },
+      { id:"katana3", kind:"melee", cat:"melee", name:"Katana (Triple)", short:"Tri Katana", mass:75, cost:16, size:3, hits:3, shots:3, fx:"Throws 3 katanas." },
+      { id:"axe", kind:"melee", cat:"melee", name:"Battle Axe", short:"Axe", mass:120, cost:8, size:3, hits:1, shots:1, fx:"Hurls a spinning axe." },
+      { id:"spear", kind:"melee", cat:"melee", name:"Spear", short:"Spear", mass:60, cost:6, size:2, hits:1, shots:1, fx:"Javelin throw." },
+      { id:"stun", kind:"melee", cat:"melee", name:"Stun Gun", short:"Stun Gun", mass:30, cost:7, size:1, hits:1, shots:1, stun:2.5, fx:"Stun bolt freezes the alien." }
+    ];
+    const WBY = Object.fromEntries(WEAPONS.map(w => [w.id, w]));
 
-    function buildStars() {
-      state.stars = Array.from({ length: 120 }, () => ({
-        x: Math.random() * canvas.width,
-        y: Math.random() * canvas.height,
-        r: Math.random() * 2 + 0.7,
-        speed: Math.random() * 0.6 + 0.2
-      }));
+    const $ = (id) => document.getElementById(id);
+    const blankQty = () => ({ ...Object.fromEntries(EQUIP.map(e => [e.id, 0])), gun:"blaster", melee:"" });
+    const sel = { challenges:new Set(["alien"]), n:1, cur:0, designs:[], names:[], qty:blankQty() };
+    function show(id){ document.querySelectorAll(".screen").forEach(s => s.classList.remove("on")); if(id) $(id).classList.add("on"); }
+
+    function calc(qty = sel.qty){
+      let m = BUS.mass, s = BUS.size, inst = 0;
+      EQUIP.forEach(e => { const q = qty[e.id]; m += e.mass*q; s += e.size*q; inst += e.cost*q; });
+      [WBY[qty.gun], qty.melee && WBY[qty.melee]].forEach(w => { if(w){ m += w.mass; s += w.size; inst += w.cost; } });
+      const launch = m * LAUNCH_RATE, total = BUS.cost + inst + launch;
+      const gravity = m * 0.3, thrust = 600 + 250 * qty.thrust;
+      return { mass:m, size:s, inst, launch, total, gravity, thrust, net:thrust - gravity, hull:100 + 30 * qty.armor };
     }
 
-    function resetPlayer() {
-      return {
-        x: canvas.width / 2,
-        y: canvas.height - 90,
-        width: 28,
-        height: 26,
-        speed: 5.5,
-        fireCooldown: 0,
-        lives: 3,
-        invuln: 0,
-        color: '#54d2ff'
+    function tag(cat){
+      const c = CAT[cat]; return `<span class="tag" style="background:${c.col}">${c.label}</span>`;
+    }
+
+    function weaponRow(w){
+      const d = document.createElement("div"); d.className = "item pick"; d.dataset.w = w.id;
+      d.innerHTML = `<div><div class="nm">${tag(w.cat)}${w.name}</div><div class="st">${w.mass} kg · $${w.cost}M · size ${w.size} — ${w.fx}</div></div><div class="qty"><span class="small" id="wm-${w.id}"></span></div>`;
+      d.onclick = () => {
+        if(w.kind === "gun") sel.qty.gun = w.id;
+        else sel.qty.melee = sel.qty.melee === w.id ? "" : w.id;
+        refresh();
       };
+      return d;
     }
 
-    function resetGame() {
-      state.player = resetPlayer();
-      state.bullets = [];
-      state.enemyBullets = [];
-      state.enemies = [];
-      state.particles = [];
-      state.score = 0;
-      state.wave = 1;
-      state.spawnCooldown = 0;
-      state.screen = 'playing';
-      spawnWave();
-      updateHud();
-      statusText.textContent = 'LIVE';
-    }
-
-    function updateHud() {
-      hudInfo.textContent = `Lives: ${state.player ? state.player.lives : 0} · Score: ${state.score} · Wave: ${state.wave}`;
-    }
-
-    function addParticles(x, y, color, amount = 14) {
-      for (let i = 0; i < amount; i++) {
-        state.particles.push({
-          x,
-          y,
-          vx: (Math.random() - 0.5) * 4,
-          vy: (Math.random() - 0.5) * 4,
-          life: Math.random() * 0.7 + 0.4,
-          color,
-          size: Math.random() * 3 + 2
-        });
-      }
-    }
-
-    function spawnWave() {
-      const columns = Math.min(10, 4 + state.wave);
-      const rows = Math.min(6, 2 + Math.floor(state.wave / 2));
-      const spacingX = 52;
-      const spacingY = 40;
-      const offsetX = ((columns - 1) * spacingX) / 2;
-      const startY = 60;
-
-      state.enemies = [];
-      for (let row = 0; row < rows; row++) {
-        for (let col = 0; col < columns; col++) {
-          state.enemies.push({
-            x: canvas.width / 2 - offsetX + col * spacingX,
-            y: startY + row * spacingY,
-            width: 30,
-            height: 24,
-            vx: 0.8 + state.wave * 0.18,
-            vy: 0,
-            hp: 1,
-            color: row % 2 === 0 ? '#77ffb3' : '#ff9c5e'
-          });
-        }
-      }
-    }
-
-    function shootPlayer() {
-      if (state.player.fireCooldown > 0) return;
-      state.bullets.push({
-        x: state.player.x,
-        y: state.player.y - 18,
-        width: 4,
-        height: 16,
-        vy: -9,
-        color: '#54d2ff'
-      });
-      state.player.fireCooldown = 0.22;
-    }
-
-    function shootEnemy(enemy) {
-      const spread = 0.3;
-      const angle = Math.atan2(state.player.y - enemy.y, state.player.x - enemy.x) + (Math.random() - 0.5) * spread;
-      const speed = 2.6 + state.wave * 0.2;
-      state.enemyBullets.push({
-        x: enemy.x,
-        y: enemy.y + enemy.height / 2,
-        width: 5,
-        height: 12,
-        vx: Math.cos(angle) * speed,
-        vy: Math.sin(angle) * speed,
-        color: '#ff5d6c'
+    function buildItems(){
+      const box = $("items"); box.innerHTML = "";
+      const head = (t) => { const h = document.createElement("h4"); h.textContent = t; h.style.marginTop = box.children.length ? "14px" : "0"; box.appendChild(h); };
+      head("Guns — choose one"); WEAPONS.filter(w => w.kind === "gun").forEach(w => box.appendChild(weaponRow(w)));
+      head("Close combat — optional"); WEAPONS.filter(w => w.kind === "melee").forEach(w => box.appendChild(weaponRow(w)));
+      head("Ship systems");
+      EQUIP.forEach(e => {
+        const d = document.createElement("div"); d.className = "item";
+        d.innerHTML = `<div><div class="nm">${e.name}</div><div class="st">${e.mass} kg · $${e.cost}M · size ${e.size} — ${e.fx}</div></div><div class="qty"><button class="sm" data-d="-1">−</button><em id="q-${e.id}">0</em><button class="sm" data-d="1">+</button></div>`;
+        d.querySelectorAll("button").forEach(b => b.onclick = () => { sel.qty[e.id] = Math.max(0, Math.min(e.max, sel.qty[e.id] + Number(b.dataset.d))); refresh(); });
+        box.appendChild(d);
       });
     }
 
-    function checkCollisions() {
-      // Player bullets -> enemies
-      for (let i = state.bullets.length - 1; i >= 0; i--) {
-        const bullet = state.bullets[i];
-        for (let j = state.enemies.length - 1; j >= 0; j--) {
-          const enemy = state.enemies[j];
-          if (bullet.x > enemy.x - enemy.width / 2 && bullet.x < enemy.x + enemy.width / 2 &&
-              bullet.y > enemy.y - enemy.height / 2 && bullet.y < enemy.y + enemy.height / 2) {
-            state.bullets.splice(i, 1);
-            state.enemies.splice(j, 1);
-            state.score += 10;
-            addParticles(enemy.x, enemy.y, '#63ff9b', 16);
-            break;
-          }
-        }
-      }
-
-      // Enemy bullets -> player
-      if (state.player && state.player.invuln <= 0) {
-        for (let i = state.enemyBullets.length - 1; i >= 0; i--) {
-          const bullet = state.enemyBullets[i];
-          const px = state.player.x;
-          const py = state.player.y;
-          const pw = state.player.width;
-          const ph = state.player.height;
-
-          if (bullet.x > px - pw / 2 && bullet.x < px + pw / 2 &&
-              bullet.y > py - ph / 2 && bullet.y < py + ph / 2) {
-            state.enemyBullets.splice(i, 1);
-            state.player.invuln = 1.2;
-            state.player.lives -= 1;
-            addParticles(px, py, '#ff5d6c', 22);
-            if (state.player.lives <= 0) {
-              endGame(false);
-            }
-            updateHud();
-            break;
-          }
-        }
-      }
-
-      // Enemies touching player
-      if (state.player) {
-        for (const enemy of state.enemies) {
-          const dx = Math.abs(enemy.x - state.player.x);
-          const dy = Math.abs(enemy.y - state.player.y);
-          if (dx < (enemy.width + state.player.width) / 2 && dy < (enemy.height + state.player.height) / 2) {
-            state.player.lives = 0;
-            endGame(false);
-            return;
-          }
-        }
-      }
+    function drawPreview(){
+      const c = $("prev").getContext("2d");
+      const gun = WBY[sel.qty.gun];
+      const melee = sel.qty.melee ? WBY[sel.qty.melee] : null;
+      c.clearRect(0, 0, 216, 130); c.fillStyle = "#050914"; c.fillRect(0, 0, 216, 130);
+      c.save(); c.translate(108, 52);
+      c.fillStyle = PILOTS[sel.cur].color; c.strokeStyle = "#dbe6ff"; c.lineWidth = 2;
+      c.beginPath(); c.moveTo(0, -20); c.lineTo(26, 24); c.lineTo(0, 14); c.lineTo(-26, 24); c.closePath(); c.fill(); c.stroke();
+      c.restore();
+      c.fillStyle = CAT[gun.cat].col; c.fillText("GUN", 42, 112); c.fillStyle = "#dbe6ff"; c.fillText("MY SHIP", 108, 112); c.fillStyle = melee ? CAT.melee.col : "#555f80"; c.fillText("COMBAT", 174, 112);
+      c.font = "10px Segoe UI"; c.fillStyle = "#7f90bd"; c.fillText(gun.short, 42, 125); c.fillText(melee ? melee.short : "none", 174, 125);
     }
 
-    function endGame(won) {
-      state.screen = 'gameover';
-      gameOverPanel.classList.remove('hidden');
-      startPanel.classList.add('hidden');
-      gameOverTitle.textContent = won ? 'Mission Complete' : 'Mission Failed';
-      finalStats.textContent = `Final score: ${state.score} · Wave reached: ${state.wave}`;
-      statusText.textContent = won ? 'SUCCESS' : 'FAILED';
-      updateHud();
+    function refresh(){
+      const r = calc();
+      drawPreview();
+      EQUIP.forEach(e => $("q-" + e.id).textContent = sel.qty[e.id]);
+      document.querySelectorAll(".item.pick").forEach(d => {
+        const on = d.dataset.w === sel.qty.gun || d.dataset.w === sel.qty.melee;
+        d.classList.toggle("on", on); $("wm-" + d.dataset.w).textContent = on ? "✔ Equipped" : "";
+      });
+      $("v-bus").textContent = BUS.cost;
+      $("v-rate").textContent = (LAUNCH_RATE * 1e3).toFixed(0) + "k";
+      $("v-inst").textContent = r.inst.toFixed(1);
+      $("v-launch").textContent = r.launch.toFixed(1);
+      $("v-total").textContent = r.total.toFixed(1);
+      $("v-mass").textContent = r.mass;
+      $("v-size").textContent = r.size;
+      $("v-cap").textContent = SIZE_CAP;
+      $("v-g").textContent = r.gravity.toFixed(0);
+      $("v-t").textContent = r.thrust;
+      $("v-net").textContent = (r.net >= 0 ? "+" : "") + r.net.toFixed(0);
+      $("v-hull").textContent = r.hull;
+      $("v-left").textContent = (BUDGET - r.total).toFixed(1) + "M";
+      $("bar-cost").style.width = Math.min(100, r.total / BUDGET * 100) + "%";
+      $("bar-size").style.width = Math.min(100, r.size / SIZE_CAP * 100) + "%";
+      const overC = r.total > BUDGET, overS = r.size > SIZE_CAP;
+      $("v-total-w").classList.toggle("over", overC); $("v-size-w").classList.toggle("over", overS);
+      $("bar-cost").style.background = overC ? "var(--bad)" : "var(--good)"; $("bar-size").style.background = overS ? "var(--bad)" : "var(--good)";
+      $("v-net").classList.toggle("over", r.net < 0);
+      $("b-launch").disabled = overC || overS;
+      $("v-warn").textContent = overC ? "Over budget!" : overS ? "Payload doesn't fit the fairing!" : r.net < 0 ? "Warning: gravity exceeds thrust — you'll sink!" : "";
     }
 
-    function update(dt) {
-      if (state.screen !== 'playing') return;
-
-      const p = state.player;
-      p.fireCooldown = Math.max(0, p.fireCooldown - dt);
-      p.invuln = Math.max(0, p.invuln - dt);
-
-      if (keys.left) p.x -= p.speed;
-      if (keys.right) p.x += p.speed;
-      if (keys.up) p.y -= p.speed;
-      if (keys.down) p.y += p.speed;
-
-      p.x = Math.max(22, Math.min(canvas.width - 22, p.x));
-      p.y = Math.max(26, Math.min(canvas.height - 26, p.y));
-
-      if (keys.fire) shootPlayer();
-
-      for (let i = state.bullets.length - 1; i >= 0; i--) {
-        const bullet = state.bullets[i];
-        bullet.y += bullet.vy * 60 * dt;
-        if (bullet.y < -20) state.bullets.splice(i, 1);
-      }
-
-      for (let i = state.enemyBullets.length - 1; i >= 0; i--) {
-        const bullet = state.enemyBullets[i];
-        bullet.x += bullet.vx * 60 * dt;
-        bullet.y += bullet.vy * 60 * dt;
-        if (bullet.x < -20 || bullet.x > canvas.width + 20 || bullet.y < -20 || bullet.y > canvas.height + 20) {
-          state.enemyBullets.splice(i, 1);
-        }
-      }
-
-      if (state.enemies.length > 0) {
-        const moveDirection = state.enemies.some((e) => e.x + e.width / 2 > canvas.width - 30) ? -1 : state.enemies.some((e) => e.x - e.width / 2 < 30) ? 1 : 0;
-
-        for (const enemy of state.enemies) {
-          enemy.x += moveDirection * (0.6 + state.wave * 0.05);
-          enemy.y += 0.1;
-          if (Math.random() < 0.012 + state.wave * 0.003) {
-            shootEnemy(enemy);
-          }
-        }
-      }
-
-      // Dawn-of-ship: if all enemies are cleared, advance wave or end game.
-      if (state.enemies.length === 0) {
-        if (state.wave >= state.maxWave) {
-          endGame(true);
-          return;
-        }
-        state.wave += 1;
-        spawnWave();
-        statusText.textContent = `WAVE ${state.wave}`;
-      }
-
-      checkCollisions();
-      updateHud();
-
-      for (let i = state.particles.length - 1; i >= 0; i--) {
-        const p = state.particles[i];
-        p.x += p.vx * 60 * dt;
-        p.y += p.vy * 60 * dt;
-        p.life -= dt;
-        if (p.life <= 0) state.particles.splice(i, 1);
-      }
-
-      // Move background stars
-      for (const star of state.stars) {
-        star.y += star.speed * 60 * dt;
-        if (star.y > canvas.height) {
-          star.y = -10;
-          star.x = Math.random() * canvas.width;
-        }
-      }
+    function beginDesign(){
+      sel.qty = blankQty(); buildItems(); refresh();
+      const who = sel.n > 1 ? `Pilot ${sel.cur + 1}` : `Pilot`;
+      $("build-title").textContent = `Step 2 — ${who} Payload & Spacecraft Design`;
+      $("build-title").style.color = PILOTS[sel.cur].color;
+      $("b-launch").textContent = sel.cur < sel.n - 1 ? "Lock In → Next Pilot" : "Lock In & Continue →";
     }
 
-    function drawBackground() {
-      ctx.fillStyle = '#02060d';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-      for (const star of state.stars) {
-        ctx.fillStyle = 'rgba(255,255,255,0.8)';
-        ctx.fillRect(star.x, star.y, star.r, star.r);
-      }
-
-      const glow = ctx.createLinearGradient(0, canvas.height - 90, 0, canvas.height);
-      glow.addColorStop(0, 'rgba(84,210,255,0)');
-      glow.addColorStop(1, 'rgba(84,210,255,0.18)');
-      ctx.fillStyle = glow;
-      ctx.fillRect(0, canvas.height - 90, canvas.width, 90);
-    }
-
-    function drawPlayer() {
-      if (!state.player) return;
-      const p = state.player;
-      ctx.save();
-      ctx.translate(p.x, p.y);
-      if (p.invuln > 0 && Math.floor(p.invuln * 12) % 2 === 0) {
-        ctx.globalAlpha = 0.45;
-      }
-
-      ctx.fillStyle = '#cfe5ff';
-      ctx.beginPath();
-      ctx.moveTo(0, -18);
-      ctx.lineTo(16, 18);
-      ctx.lineTo(0, 12);
-      ctx.lineTo(-16, 18);
-      ctx.closePath();
-      ctx.fill();
-
-      ctx.fillStyle = p.color;
-      ctx.fillRect(-4, 6, 8, 16);
-      ctx.fillRect(-10, 0, 20, 7);
-      ctx.restore();
-    }
-
-    function drawBullets() {
-      for (const bullet of state.bullets) {
-        ctx.fillStyle = bullet.color;
-        ctx.fillRect(bullet.x - bullet.width / 2, bullet.y - bullet.height / 2, bullet.width, bullet.height);
-      }
-
-      for (const bullet of state.enemyBullets) {
-        ctx.fillStyle = bullet.color;
-        ctx.fillRect(bullet.x - bullet.width / 2, bullet.y - bullet.height / 2, bullet.width, bullet.height);
-      }
-    }
-
-    function drawEnemies() {
-      for (const enemy of state.enemies) {
-        ctx.fillStyle = enemy.color;
-        ctx.fillRect(enemy.x - enemy.width / 2, enemy.y - enemy.height / 2, enemy.width, enemy.height);
-        ctx.fillStyle = '#0d0f18';
-        ctx.fillRect(enemy.x - 12, enemy.y + enemy.height / 2 + 4, 24, 4);
-      }
-    }
-
-    function drawParticles() {
-      for (const p of state.particles) {
-        ctx.fillStyle = p.color;
-        ctx.globalAlpha = Math.max(0, p.life);
-        ctx.fillRect(p.x, p.y, p.size, p.size);
-      }
-      ctx.globalAlpha = 1;
-    }
-
-    function drawLives() {
-      if (!state.player) return;
-      ctx.fillStyle = '#dfe9ff';
-      ctx.font = '14px Segoe UI';
-      ctx.fillText('Hull', 18, 30);
-      for (let i = 0; i < state.player.lives; i++) {
-        ctx.fillStyle = '#63ff9b';
-        ctx.fillRect(72 + i * 18, 18, 12, 12);
-      }
-    }
-
-    function render() {
-      drawBackground();
-      drawParticles();
-      drawEnemies();
-      drawBullets();
-      drawPlayer();
-      drawLives();
-
-      if (state.screen === 'menu') {
-        ctx.fillStyle = 'rgba(0,0,0,0.2)';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-      }
-    }
-
-    function gameLoop(timestamp) {
-      const dt = Math.min((timestamp - (state.lastTime || timestamp)) / 1000, 0.03);
-      state.lastTime = timestamp;
-      update(dt);
-      render();
-      requestAnimationFrame(gameLoop);
-    }
-
-    function startMission() {
-      buildStars();
-      resetGame();
-      startPanel.classList.add('hidden');
-      gameOverPanel.classList.add('hidden');
-    }
-
-    startButton.addEventListener('click', startMission);
-    restartButton.addEventListener('click', startMission);
-
-    document.addEventListener('keydown', (event) => {
-      if (event.code === 'ArrowLeft' || event.code === 'KeyA') keys.left = true;
-      if (event.code === 'ArrowRight' || event.code === 'KeyD') keys.right = true;
-      if (event.code === 'ArrowUp' || event.code === 'KeyW') keys.up = true;
-      if (event.code === 'ArrowDown' || event.code === 'KeyS') keys.down = true;
-      if (event.code === 'Space') {
-        keys.fire = true;
-        event.preventDefault();
-      }
+    document.querySelectorAll("button.pc").forEach(b => b.onclick = () => {
+      sel.n = Number(b.dataset.n); sel.designs = []; sel.cur = 0;
+      let saved = []; try { saved = JSON.parse(localStorage.getItem("mission100m_names")) || []; } catch(e) {}
+      $("name-fields").innerHTML = Array.from({ length: sel.n }, (_, i) =>
+        `<div style="margin:8px 0;display:flex;gap:10px;align-items:center"><b style="color:${PILOTS[i].color};width:70px">${sel.n > 1 ? "Pilot " + (i+1) : "Pilot"}</b><input class="nm" id="nm-${i}" maxlength="14" placeholder="${PILOTS[i].name}" value="${saved[i] || ""}"></div>`
+      ).join("");
+      show("s-names"); $("nm-0").focus();
     });
 
-    document.addEventListener('keyup', (event) => {
-      if (event.code === 'ArrowLeft' || event.code === 'KeyA') keys.left = false;
-      if (event.code === 'ArrowRight' || event.code === 'KeyD') keys.right = false;
-      if (event.code === 'ArrowUp' || event.code === 'KeyW') keys.up = false;
-      if (event.code === 'ArrowDown' || event.code === 'KeyS') keys.down = false;
-      if (event.code === 'Space') keys.fire = false;
-    });
+    $("b-names-back").onclick = () => show("s-title");
+    $("b-names-ok").onclick = () => {
+      sel.names = Array.from({ length: sel.n }, (_, i) => $("nm-" + i).value.trim().slice(0, 14) || PILOTS[i].name);
+      try { localStorage.setItem("mission100m_names", JSON.stringify(sel.names)); } catch(e) {}
+      show("s-brief");
+    };
+    $("b-scores").onclick = () => { $("hs-body").innerHTML = '<p class="small">No missions recorded yet.</p>'; show("s-scores"); };
+    $("b-hs-back").onclick = () => show("s-title");
+    $("b-to-build").onclick = () => { sel.cur = 0; sel.designs = []; beginDesign(); show("s-build"); };
+    $("mute").onclick = () => { };
+    $("b-launch").onclick = () => {
+      sel.designs[sel.cur] = { ...sel.qty };
+      if(sel.cur < sel.n - 1){ sel.cur++; beginDesign(); $("s-build").scrollTop = 0; return; }
+      show("s-how");
+    };
+    $("b-go").onclick = () => {
+      show("s-count"); let n = 3; $("count").textContent = n;
+      const iv = setInterval(() => {
+        n--;
+        if(n > 0){ $("count").textContent = n; }
+        else if(n === 0){ $("count").textContent = "LIFTOFF"; }
+        else { clearInterval(iv); show(null); }
+      }, 800);
+    };
 
-    buildStars();
-    updateHud();
-    requestAnimationFrame(gameLoop);
+    const cv = $("c"), ctx = cv.getContext("2d");
+    const W = 900, H = 640;
+    const keys = {};
+    addEventListener("keydown", e => {
+      if(e.target.tagName === "INPUT") return;
+      keys[e.code] = true;
+      if(/^(Space|Arrow|Enter|Numpad)/.test(e.code)) e.preventDefault();
+    });
+    addEventListener("keyup", e => keys[e.code] = false);
+
+    function render(){
+      ctx.fillStyle = "#02030a"; ctx.fillRect(0, 0, W, H);
+      ctx.fillStyle = "#dbe6ff"; ctx.font = "bold 18px Segoe UI"; ctx.textAlign = "center";
+      ctx.fillText("Mission prototype restored to safe baseline", W / 2, H / 2);
+    }
+
+    function loop(){ render(); requestAnimationFrame(loop); }
+    requestAnimationFrame(loop);
   </script>
 </body>
 </html>
